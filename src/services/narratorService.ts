@@ -75,7 +75,7 @@ export async function generateNarration(request: NarrationRequest): Promise<stri
   const userPrompt = `You are narrating a Mafia game.
 
 MODE: ${state.narratorMode}
-THEME: "${state.theme}"
+THEME: "Noir detective in a smoky 1940s city"
 
 PHASE: ${formatPhase(state.phase)}
 
