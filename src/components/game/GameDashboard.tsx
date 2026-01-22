@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
 import { generateNarration, getPhaseInstruction } from '@/services/narratorService';
-import { Sun, MessageSquare, Vote, Skull, RefreshCw, ArrowRight, Clock, Users } from 'lucide-react';
+import { Sun, MessageSquare, Vote, Skull, RefreshCw, ArrowRight, Clock, Users, Volume2, VolumeX, Loader2 } from 'lucide-react';
 import { NightTurnScreen } from './NightTurnScreen';
+import { useVoiceNarration } from '@/hooks/useVoiceNarration';
 
 export function GameDashboard() {
   const { state, dispatch } = useGame();
   const [timerSeconds, setTimerSeconds] = useState(state.discussionTimeSeconds);
+  const { speak, stop, isPlaying, isLoading: isVoiceLoading } = useVoiceNarration();
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
 
   const alivePlayers = state.players.filter(p => p.isAlive);
   const deadPlayers = state.players.filter(p => !p.isAlive);
@@ -24,6 +27,11 @@ export function GameDashboard() {
       });
       dispatch({ type: 'SET_NARRATION', narration });
       dispatch({ type: 'SET_IS_NARRATING', isNarrating: false });
+      
+      // Auto-play voice narration if enabled
+      if (voiceEnabled && narration) {
+        speak(narration);
+      }
     };
 
     if (state.phase !== 'setup' && state.phase !== 'role-reveal' && state.phase !== 'endgame' && state.phase !== 'night') {
@@ -54,6 +62,7 @@ export function GameDashboard() {
   }
 
   const handleRerollNarration = async () => {
+    stop(); // Stop any playing audio
     dispatch({ type: 'SET_IS_NARRATING', isNarrating: true });
     const { events, instruction } = getPhaseInstruction(state);
     const narration = await generateNarration({
@@ -63,6 +72,26 @@ export function GameDashboard() {
     });
     dispatch({ type: 'SET_NARRATION', narration });
     dispatch({ type: 'SET_IS_NARRATING', isNarrating: false });
+    
+    // Auto-play voice narration if enabled
+    if (voiceEnabled && narration) {
+      speak(narration);
+    }
+  };
+
+  const handlePlayNarration = () => {
+    if (isPlaying) {
+      stop();
+    } else if (state.narration) {
+      speak(state.narration);
+    }
+  };
+
+  const toggleVoice = () => {
+    if (voiceEnabled) {
+      stop();
+    }
+    setVoiceEnabled(!voiceEnabled);
   };
 
   const formatTime = (seconds: number) => {
@@ -105,16 +134,48 @@ export function GameDashboard() {
         <div className="mafia-card space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-serif text-secondary">Narrator</h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRerollNarration}
-              disabled={state.isNarrating}
-              className="text-muted-foreground hover:text-secondary"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${state.isNarrating ? 'animate-spin' : ''}`} />
-              Re-roll
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* Voice Toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleVoice}
+                className={`text-muted-foreground ${voiceEnabled ? 'hover:text-secondary' : 'hover:text-primary'}`}
+                title={voiceEnabled ? 'Disable voice' : 'Enable voice'}
+              >
+                {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              </Button>
+              
+              {/* Play/Stop Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handlePlayNarration}
+                disabled={isVoiceLoading || !state.narration || state.isNarrating}
+                className="text-muted-foreground hover:text-secondary"
+                title={isPlaying ? 'Stop narration' : 'Play narration'}
+              >
+                {isVoiceLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : isPlaying ? (
+                  <VolumeX className="w-4 h-4" />
+                ) : (
+                  <Volume2 className="w-4 h-4" />
+                )}
+                {isPlaying ? 'Stop' : 'Play'}
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRerollNarration}
+                disabled={state.isNarrating}
+                className="text-muted-foreground hover:text-secondary"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${state.isNarrating ? 'animate-spin' : ''}`} />
+                Re-roll
+              </Button>
+            </div>
           </div>
           
           <div className="bg-muted/50 rounded-lg p-4 min-h-[120px]">
