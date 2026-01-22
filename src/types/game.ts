@@ -85,8 +85,8 @@ export interface RoleDistribution {
 
 export const getRoleDistribution = (playerCount: number): RoleDistribution => {
   if (playerCount === 4) {
-    // 4 players: 1 Mafia, 1 Doctor, 2 Villagers
-    return { mafia: 1, detective: 0, doctor: 1, villager: 2 };
+    // 4 players: 1 Mafia, 3 Villagers (no Doctor)
+    return { mafia: 1, detective: 0, doctor: 0, villager: 3 };
   } else if (playerCount === 5) {
     // 5 players: 1 Mafia, 1 Doctor, 3 Villagers
     return { mafia: 1, detective: 0, doctor: 1, villager: 3 };
