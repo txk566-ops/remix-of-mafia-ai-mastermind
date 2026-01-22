@@ -14,6 +14,7 @@ export type NarratorMode = 'PG' | 'ADULT' | 'UNHINGED';
 export interface Player {
   id: string;
   name: string;
+  details: string;
   role: Role | null;
   isAlive: boolean;
   hasRevealedRole: boolean;
