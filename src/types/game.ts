@@ -74,17 +74,22 @@ export interface RoleDistribution {
 
 export const getRoleDistribution = (playerCount: number): RoleDistribution => {
   if (playerCount === 4) {
-    return { mafia: 1, detective: 1, doctor: 0, villager: 2 };
+    // 4 players: 1 Mafia, 1 Doctor, 2 Villagers
+    return { mafia: 1, detective: 0, doctor: 1, villager: 2 };
   } else if (playerCount === 5) {
-    return { mafia: 1, detective: 1, doctor: 0, villager: 3 };
+    // 5 players: 1 Mafia, 1 Doctor, 3 Villagers
+    return { mafia: 1, detective: 0, doctor: 1, villager: 3 };
   } else if (playerCount === 6) {
-    return { mafia: 2, detective: 1, doctor: 0, villager: 3 };
+    // 6 players: 1 Mafia, 1 Detective, 4 Villagers
+    return { mafia: 1, detective: 1, doctor: 0, villager: 4 };
   } else if (playerCount === 7) {
+    // 7 players: 2 Mafia, 1 Detective, 1 Doctor, 3 Villagers
     return { mafia: 2, detective: 1, doctor: 1, villager: 3 };
   } else if (playerCount === 8) {
+    // 8 players: 2 Mafia, 1 Detective, 1 Doctor, 4 Villagers
     return { mafia: 2, detective: 1, doctor: 1, villager: 4 };
   } else {
-    // 9-12 players: cap Mafia at 3, include Doctor + Detective, rest Villagers
+    // 9-12 players: 3 Mafia, 1 Detective, 1 Doctor, rest Villagers
     const mafia = 3;
     const detective = 1;
     const doctor = 1;
