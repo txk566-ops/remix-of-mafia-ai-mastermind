@@ -5,10 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { Skull, Plus, X, Users, Sparkles, Play, Volume2, Loader2 } from 'lucide-react';
+import { Skull, Plus, Users, Sparkles, Play, Volume2, Loader2, Wand2 } from 'lucide-react';
 import { NarratorMode } from '@/types/game';
 import { VOICE_OPTIONS } from '@/data/voiceOptions';
 import { useVoiceNarration } from '@/hooks/useVoiceNarration';
+import { PlayerDetailsInput } from './PlayerDetailsInput';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const THEME_SUGGESTIONS = [
   'Noir detective in a smoky 1940s city',
@@ -24,6 +27,7 @@ const THEME_SUGGESTIONS = [
 export function SetupScreen() {
   const { state, dispatch } = useGame();
   const [newPlayerName, setNewPlayerName] = useState('');
+  const [isFormattingBios, setIsFormattingBios] = useState(false);
   const { speak, stop, isPlaying, isLoading: isVoiceLoading } = useVoiceNarration({
     voiceId: state.voiceSettings.voiceId,
     speed: state.voiceSettings.speed,
@@ -53,6 +57,51 @@ export function SetupScreen() {
   };
 
   const canStartGame = state.players.length >= 4;
+
+  // Check if there are players with raw details that need formatting
+  const playersNeedingFormat = state.players.filter(
+    p => p.detailsSource !== 'registry' && p.rawDetails.trim().length > 0 && p.detailsSource !== 'custom'
+  );
+  const canFormatBios = playersNeedingFormat.length > 0 && state.apiKey;
+
+  const handleFormatBios = async () => {
+    if (!state.apiKey) {
+      toast.error('Please add your Grok API key first');
+      return;
+    }
+
+    const playersToFormat = state.players.filter(
+      p => p.detailsSource !== 'registry' && p.rawDetails.trim().length > 0
+    );
+
+    if (playersToFormat.length === 0) {
+      toast.info('No player bios to format');
+      return;
+    }
+
+    setIsFormattingBios(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('format-player-bios', {
+        body: {
+          players: playersToFormat.map(p => ({ name: p.name, rawDetails: p.rawDetails })),
+          mode: state.narratorMode,
+          apiKey: state.apiKey,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.players) {
+        dispatch({ type: 'SET_ALL_FORMATTED_DETAILS', players: data.players });
+        toast.success(`Formatted ${data.players.length} player bio${data.players.length > 1 ? 's' : ''}!`);
+      }
+    } catch (error) {
+      console.error('Failed to format bios:', error);
+      toast.error('Failed to format bios. Check your API key.');
+    } finally {
+      setIsFormattingBios(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-night p-6 flex flex-col items-center">
@@ -101,23 +150,35 @@ export function SetupScreen() {
             </p>
           )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div className="space-y-2">
             {state.players.map((player, index) => (
-              <div
+              <PlayerDetailsInput
                 key={player.id}
-                className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2 border border-border animate-scale-in"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <span className="truncate">{player.name}</span>
-                <button
-                  onClick={() => dispatch({ type: 'REMOVE_PLAYER', id: player.id })}
-                  className="text-muted-foreground hover:text-destructive transition-colors ml-2"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+                player={player}
+                onUpdateRawDetails={(rawDetails) => 
+                  dispatch({ type: 'SET_PLAYER_RAW_DETAILS', playerId: player.id, rawDetails })
+                }
+                onRemove={() => dispatch({ type: 'REMOVE_PLAYER', id: player.id })}
+              />
             ))}
           </div>
+
+          {/* Format Bios Button */}
+          {state.players.some(p => p.detailsSource !== 'registry') && (
+            <Button
+              onClick={handleFormatBios}
+              disabled={!canFormatBios || isFormattingBios}
+              variant="outline"
+              className="w-full"
+            >
+              {isFormattingBios ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Wand2 className="w-4 h-4 mr-2" />
+              )}
+              {isFormattingBios ? 'Formatting...' : 'Format New Bios with AI'}
+            </Button>
+          )}
         </div>
 
         {/* Theme Section */}

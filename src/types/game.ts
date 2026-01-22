@@ -16,6 +16,8 @@ export interface Player {
   id: string;
   name: string;
   details: string;
+  rawDetails: string;
+  detailsSource: 'registry' | 'custom' | 'none';
   role: Role | null;
   isAlive: boolean;
   hasRevealedRole: boolean;
