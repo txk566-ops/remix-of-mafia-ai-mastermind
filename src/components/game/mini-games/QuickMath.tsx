@@ -12,30 +12,31 @@ export function QuickMath({ onComplete }: QuickMathProps) {
   const [attempts, setAttempts] = useState(0);
 
   useEffect(() => {
-    const a = Math.floor(Math.random() * 15) + 3;
-    const b = Math.floor(Math.random() * 15) + 3;
+    generateProblem();
+  }, []);
+
+  const generateProblem = () => {
+    const a = Math.floor(Math.random() * 9) + 1;
+    const b = Math.floor(Math.random() * 9) + 1;
     setNum1(a);
     setNum2(b);
     
     const correct = a + b;
     const wrongAnswers = [
-      correct + Math.floor(Math.random() * 5) + 1,
-      correct - Math.floor(Math.random() * 5) - 1,
-      correct + Math.floor(Math.random() * 10) - 5,
+      correct + Math.floor(Math.random() * 3) + 1,
+      correct - Math.floor(Math.random() * 3) - 1,
+      correct + Math.floor(Math.random() * 5) - 2,
     ].filter(n => n !== correct && n > 0);
     
     const allOptions = [correct, ...wrongAnswers.slice(0, 3)];
     setOptions(allOptions.sort(() => Math.random() - 0.5));
-  }, []);
+  };
 
   const handleAnswer = (answer: number) => {
     if (answer === num1 + num2) {
       onComplete();
     } else {
       setAttempts(prev => prev + 1);
-      if (attempts >= 2) {
-        onComplete(); // Let them pass after 3 attempts
-      }
     }
   };
 
@@ -62,7 +63,7 @@ export function QuickMath({ onComplete }: QuickMathProps) {
       </div>
       
       {attempts > 0 && (
-        <p className="text-primary text-sm">Try again! ({3 - attempts} attempts left)</p>
+        <p className="text-primary text-sm">Wrong! Try again</p>
       )}
     </div>
   );

@@ -123,6 +123,8 @@ export function NightTurnScreen() {
         <NightActionScreen
           player={currentPlayer}
           alivePlayers={alivePlayers}
+          allPlayers={state.players}
+          existingMafiaTarget={state.nightActions.mafiaTarget}
           onComplete={handleActionComplete}
         />
       );
