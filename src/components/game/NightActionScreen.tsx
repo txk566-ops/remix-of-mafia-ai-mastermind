@@ -8,10 +8,11 @@ interface NightActionScreenProps {
   alivePlayers: Player[];
   allPlayers: Player[];
   existingMafiaTarget: string | null;
+  doctorSelfHealUsed: boolean;
   onComplete: (action?: { targetId: string; result?: DetectiveResult }) => void;
 }
 
-export function NightActionScreen({ player, alivePlayers, allPlayers, existingMafiaTarget, onComplete }: NightActionScreenProps) {
+export function NightActionScreen({ player, alivePlayers, allPlayers, existingMafiaTarget, doctorSelfHealUsed, onComplete }: NightActionScreenProps) {
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null);
   const [detectiveResult, setDetectiveResult] = useState<DetectiveResult | null>(null);
   const [confirmed, setConfirmed] = useState(false);
@@ -26,9 +27,13 @@ export function NightActionScreen({ player, alivePlayers, allPlayers, existingMa
     ? alivePlayers.find(p => p.id === existingMafiaTarget)
     : null;
 
-  // Filter out self for targeting (except doctor can protect self)
+  // Filter out self for targeting (except doctor can protect self once)
   const validTargets = alivePlayers.filter(p => {
-    if (player.role === 'Doctor') return true; // Doctor can protect anyone including self
+    if (player.role === 'Doctor') {
+      // Doctor can protect self only if they haven't used their one self-heal
+      if (p.id === player.id && doctorSelfHealUsed) return false;
+      return true;
+    }
     return p.id !== player.id;
   });
 
@@ -249,7 +254,7 @@ export function NightActionScreen({ player, alivePlayers, allPlayers, existingMa
             }`}
           >
             {target.name}
-            {target.id === player.id && (
+            {target.id === player.id && player.role === 'Doctor' && (
               <span className="text-xs text-muted-foreground ml-1">(you)</span>
             )}
           </Button>

@@ -187,11 +187,22 @@ export function getPhaseInstruction(state: GameState): { events: string[]; instr
         events: recentEvents,
         instruction: "Mafia: choose your victim. Detective: investigate someone. Doctor: protect someone.",
       };
-    case "morning":
+    case "morning": {
+      let morningInstruction = "See what happened during the night and discuss.";
+      
+      if (state.lastKilledPlayer) {
+        morningInstruction = `${state.lastKilledPlayer.name} was murdered by the Mafia last night. Describe their death dramatically and set the scene for the village's grief and suspicion.`;
+      } else if (state.lastSavedPlayer) {
+        morningInstruction = `${state.lastSavedPlayer.name} was targeted by the Mafia but was SAVED by the Doctor! Describe the miraculous save, the near-death experience, and the village's relief. Make it dramatic!`;
+      } else {
+        morningInstruction = "A peaceful night - no one was targeted. Describe the eerie calm and growing tension.";
+      }
+      
       return {
         events: recentEvents,
-        instruction: "See what happened during the night and discuss.",
+        instruction: morningInstruction,
       };
+    }
     case "discussion":
       return {
         events: recentEvents,

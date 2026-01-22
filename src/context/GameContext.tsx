@@ -64,6 +64,8 @@ const initialState: GameState = {
   revoteCount: 0,
   lastKilledPlayer: null,
   lastVotedOutPlayer: null,
+  doctorSelfHealUsed: false,
+  lastSavedPlayer: null,
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -150,16 +152,21 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         nightActions: { ...state.nightActions, detectiveTarget: action.targetId },
       };
 
-    case 'SET_DOCTOR_TARGET':
+    case 'SET_DOCTOR_TARGET': {
+      const doctor = state.players.find(p => p.role === 'Doctor');
+      const isSelfHeal = doctor && action.targetId === doctor.id;
       return {
         ...state,
         nightActions: { ...state.nightActions, doctorTarget: action.targetId },
+        doctorSelfHealUsed: isSelfHeal ? true : state.doctorSelfHealUsed,
       };
+    }
 
     case 'RESOLVE_NIGHT': {
       const { mafiaTarget, doctorTarget, detectiveTarget } = state.nightActions;
       let updatedPlayers = [...state.players];
       let killedPlayer: Player | null = null;
+      let savedPlayer: Player | null = null;
       const newEvents: GameEvent[] = [];
 
       // Resolve mafia kill
@@ -174,9 +181,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           isPublic: true,
         });
       } else if (mafiaTarget && mafiaTarget === doctorTarget) {
+        savedPlayer = state.players.find(p => p.id === mafiaTarget) || null;
         newEvents.push({
           phase: 'night',
-          description: 'The Doctor saved someone from death tonight!',
+          description: `The Doctor saved ${savedPlayer?.name} from death tonight!`,
           isPublic: true,
         });
       } else {
@@ -198,6 +206,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         gameEvents: [...state.gameEvents, ...newEvents],
         winner,
         lastKilledPlayer: killedPlayer,
+        lastSavedPlayer: savedPlayer,
       };
     }
 
@@ -336,6 +345,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         apiKey: state.apiKey,
         theme: state.theme,
         narratorMode: state.narratorMode,
+        doctorSelfHealUsed: false,
+        lastSavedPlayer: null,
       };
 
     case 'FULL_RESET':
@@ -343,6 +354,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...initialState,
         apiKey: state.apiKey,
+        doctorSelfHealUsed: false,
+        lastSavedPlayer: null,
       };
 
     default:

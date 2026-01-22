@@ -64,6 +64,8 @@ export interface GameState {
   revoteCount: number;
   lastKilledPlayer: Player | null;
   lastVotedOutPlayer: Player | null;
+  doctorSelfHealUsed: boolean;
+  lastSavedPlayer: Player | null;
 }
 
 export interface RoleDistribution {
