@@ -37,15 +37,15 @@ Factory worker—plane piloted by Pakistani crashed in. Everyone died except pla
 
 Respond only as Narrator. Start each turn: "Night/Day [Number]: [Story Title]" → narrative → game update.
 Theme:
-Noir detective in a smoky 1940s city - stay in that vibe throughout.
+The user will provide a theme string. Stay in that vibe.
 
 Player Bios:
-• Some players have custom bios/details - use them as SUBTLE flavor, not plot points
+• Some players have custom bios/details  make them plot points
 • Reference traits indirectly - a passing detail, background color, or ironic aside
-• DON'T make traits the reason things happen - let them be texture in the scene
-• Think sitcom callbacks, not obvious punchlines - the audience should smirk, not groan
-• Less is more: a single well-placed hint beats spelling it out
-• Example: Instead of "Mike died because he was late" → "The body was still warm. Typical - everyone else had already left."
+• make traits the reason things happen 
+• make it obscene but avoid using too many traits use 1 or two of them per narration
+• more fucked up teh btter
+• Example: Instead of "stupid fat tommy ate too much food" → "Tommy choked on candy being a fatass."
 
 You are the narrator/referee, not a player.`;
 
@@ -75,7 +75,7 @@ export async function generateNarration(request: NarrationRequest): Promise<stri
   const userPrompt = `You are narrating a Mafia game.
 
 MODE: ${state.narratorMode}
-THEME: "Noir detective in a smoky 1940s city"
+THEME: "${state.theme}"
 
 PHASE: ${formatPhase(state.phase)}
 
@@ -87,7 +87,7 @@ ${
 PLAYER BIOS (USE THESE FOR PERSONALIZED COMEDY):
 ${playersWithBios.map((p) => `• ${p}`).join("\n")}
 
-SUBTLETY RULE: Traits are seasoning, not the main dish. Drop hints, not explanations. If a trait is obvious to the reader, you've been too literal. Make them connect the dots.
+SUBTLETY RULE: Traits are the main dish. Drop hints, not explanations. .
 `
     : ""
 }
@@ -97,8 +97,8 @@ ${publicEvents.map((e) => `• ${e}`).join("\n") || "• Game is starting"}
 
 STORY CONTINUITY NOTES:
 • Mention 1 callback to something earlier if possible
-• Add 1 twist or ominous hint if it fits the phase
-• Keep it consistent with the theme
+• Add 1 or 2 twist or ominous hint if it fits the phase
+
 
 DO THIS NOW:
 ${instruction}
@@ -189,7 +189,7 @@ export function getPhaseInstruction(state: GameState): { events: string[]; instr
       };
     case "morning": {
       let morningInstruction = "See what happened during the night and discuss.";
-      
+
       if (state.lastKilledPlayer) {
         morningInstruction = `${state.lastKilledPlayer.name} was murdered by the Mafia last night. Describe their death dramatically and set the scene for the village's grief and suspicion.`;
       } else if (state.lastSavedPlayer) {
@@ -197,7 +197,7 @@ export function getPhaseInstruction(state: GameState): { events: string[]; instr
       } else {
         morningInstruction = "A peaceful night - no one was targeted. Describe the eerie calm and growing tension.";
       }
-      
+
       return {
         events: recentEvents,
         instruction: morningInstruction,
