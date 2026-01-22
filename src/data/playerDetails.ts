@@ -19,7 +19,7 @@ export const PLAYER_DETAILS: Record<string, string> = {
     "(autistic ex-heroin addict who OD’d once, still loves stuffed Stitch from Lilo & Stitch, total virgin, super Catholic guilt, Italian)",
   Soph: "(dating Francesco, kinda oblivious, gives off dumb blonde vibes even though she’s brunette, obsessed with stuffed flamingos, Italian)",
   Francesco: "(dating Soph, short temper with anger issues, Italian from Jersey, gets pissed easily)",
-  Black Alex: "(black guy in ROTC, total manwhore who fucks anything that moves)",
+  "Black Alex": "(black guy in ROTC, total manwhore who fucks anything that moves)",
 Kiki: "(Mexican Italian bastard, Catholic as fuck, moocher, can’t help but eat everything in sight)",
     Travis: "(gay, can’t find the directions to the gym, all talk no fight, once flew to Africa for dick)",
     Kate: "(can’t help but fuck with a frat man, drunker than your average alcoholic, no dancing just be moving, Indian)",
