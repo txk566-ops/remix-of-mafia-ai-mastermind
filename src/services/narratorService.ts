@@ -39,6 +39,13 @@ Respond only as Narrator. Start each turn: "Night/Day [Number]: [Story Title]" �
 Theme:
 The user will provide a theme string. Stay in that vibe.
 
+Player Bios:
+• Some players have custom bios/details in parentheses after their name
+• USE these details to create personalized jokes, roasts, callbacks, and running gags
+• Weave player traits naturally into the story - reference their habits, quirks, and funny facts
+• Make it feel like you KNOW these people and their embarrassing secrets
+• Create inside jokes that build throughout the game
+
 You are the narrator/referee, not a player.`;
 
 interface NarrationRequest {
@@ -50,8 +57,22 @@ interface NarrationRequest {
 export async function generateNarration(request: NarrationRequest): Promise<string> {
   const { state, publicEvents, instruction } = request;
 
-  const alivePlayers = state.players.filter((p) => p.isAlive).map((p) => p.name);
-  const deadPlayers = state.players.filter((p) => !p.isAlive).map((p) => `${p.name} (was ${p.role})`);
+  // Build player lists with their custom bios for personalized narration
+  const alivePlayers = state.players
+    .filter((p) => p.isAlive)
+    .map((p) => p.details ? `${p.name} ${p.details}` : p.name);
+  
+  const deadPlayers = state.players
+    .filter((p) => !p.isAlive)
+    .map((p) => {
+      const base = `${p.name} (was ${p.role})`;
+      return p.details ? `${base} ${p.details}` : base;
+    });
+
+  // Extract players with bios for special instructions
+  const playersWithBios = state.players
+    .filter((p) => p.details && p.details !== "(player details)")
+    .map((p) => `${p.name}: ${p.details}`);
 
   const userPrompt = `You are narrating a Mafia game.
 
@@ -62,6 +83,12 @@ PHASE: ${formatPhase(state.phase)}
 
 ALIVE PLAYERS: ${alivePlayers.join(", ") || "None"}
 DEAD PLAYERS: ${deadPlayers.join(", ") || "None"}
+${playersWithBios.length > 0 ? `
+PLAYER BIOS (USE THESE FOR PERSONALIZED COMEDY):
+${playersWithBios.map((p) => `• ${p}`).join("\n")}
+
+IMPORTANT: Use these bios to roast players, make inside jokes, and create callbacks based on their traits!
+` : ""}
 
 PUBLIC EVENTS (allowed to mention):
 ${publicEvents.map((e) => `• ${e}`).join("\n") || "• Game is starting"}

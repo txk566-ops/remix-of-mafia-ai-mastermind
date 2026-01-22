@@ -11,6 +11,7 @@ import {
   checkWinCondition,
   GameEvent
 } from '@/types/game';
+import { getPlayerDetails } from '@/data/playerDetails';
 
 type GameAction =
   | { type: 'ADD_PLAYER'; name: string }
@@ -67,6 +68,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'ADD_PLAYER':
       if (state.players.length >= 12) return state;
+      const playerDetails = getPlayerDetails(action.name);
       return {
         ...state,
         players: [
@@ -74,6 +76,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           {
             id: generateId(),
             name: action.name,
+            details: playerDetails,
             role: null,
             isAlive: true,
             hasRevealedRole: false,
