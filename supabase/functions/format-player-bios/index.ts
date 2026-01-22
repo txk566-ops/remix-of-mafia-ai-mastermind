@@ -46,17 +46,18 @@ serve(async (req) => {
     const prompt = `You are formatting player bios for a Mafia party game. Convert these raw notes into punchy, formatted bios.
 
 RULES:
-1. Output format for each player: (trait1, trait2, trait3, quirk, etc.)
+1. Output format for each player: (trait1, trait2, trait3) - MAXIMUM 6 traits, aim for 3-6
 2. Keep the essence of what was written but make it punchy and usable for comedy narration
-3. Extract 3-5 key traits or characteristics from the raw input
+3. Pick the MOST interesting/funny 3-6 traits - ignore the rest
 4. Match this narrator mode: ${mode} - ${modeInstructions[mode as keyof typeof modeInstructions] || modeInstructions.ADULT}
 5. Return ONLY valid JSON array, no markdown or explanation
+6. Each trait should be short (2-5 words max)
 
 PLAYERS TO FORMAT:
 ${(players as PlayerInput[]).map((p: PlayerInput) => `- ${p.name}: "${p.rawDetails}"`).join('\n')}
 
 RESPOND WITH ONLY A JSON ARRAY:
-[{"name": "PlayerName", "details": "(formatted traits here)"}]`;
+[{"name": "PlayerName", "details": "(trait1, trait2, trait3)"}]`;
 
     const response = await fetch("https://api.x.ai/v1/chat/completions", {
       method: "POST",
