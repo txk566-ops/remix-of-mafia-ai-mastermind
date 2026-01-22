@@ -45,6 +45,11 @@ export interface GameEvent {
   isPublic: boolean;
 }
 
+export interface VoiceSettings {
+  voiceId: string;
+  speed: number; // 0.7 to 1.2
+}
+
 export interface GameState {
   phase: GamePhase;
   players: Player[];
@@ -66,6 +71,7 @@ export interface GameState {
   lastVotedOutPlayer: Player | null;
   doctorSelfHealUsed: boolean;
   lastSavedPlayer: Player | null;
+  voiceSettings: VoiceSettings;
 }
 
 export interface RoleDistribution {

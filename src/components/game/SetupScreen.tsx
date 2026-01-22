@@ -4,8 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Skull, Plus, X, Users, Sparkles, Play } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { Skull, Plus, X, Users, Sparkles, Play, Volume2, Loader2 } from 'lucide-react';
 import { NarratorMode } from '@/types/game';
+import { VOICE_OPTIONS } from '@/data/voiceOptions';
+import { useVoiceNarration } from '@/hooks/useVoiceNarration';
 
 const THEME_SUGGESTIONS = [
   'Noir detective in a smoky 1940s city',
@@ -21,6 +24,20 @@ const THEME_SUGGESTIONS = [
 export function SetupScreen() {
   const { state, dispatch } = useGame();
   const [newPlayerName, setNewPlayerName] = useState('');
+  const { speak, stop, isPlaying, isLoading: isVoiceLoading } = useVoiceNarration({
+    voiceId: state.voiceSettings.voiceId,
+    speed: state.voiceSettings.speed,
+  });
+
+  const selectedVoice = VOICE_OPTIONS.find(v => v.id === state.voiceSettings.voiceId);
+
+  const handlePreviewVoice = () => {
+    if (isPlaying) {
+      stop();
+    } else {
+      speak(`Greetings, citizens. Tonight, danger lurks in the shadows. The game of deception begins now.`);
+    }
+  };
 
   const handleAddPlayer = () => {
     if (newPlayerName.trim() && state.players.length < 12) {
@@ -163,6 +180,62 @@ export function SetupScreen() {
             {state.narratorMode === 'ADULT' && 'Mild profanity allowed'}
             {state.narratorMode === 'UNHINGED' && 'Chaotic, savage humor (but still safe)'}
           </p>
+        </div>
+
+        {/* Voice Settings */}
+        <div className="mafia-card space-y-4">
+          <div className="flex items-center gap-2 text-secondary">
+            <Volume2 className="w-5 h-5" />
+            <h2 className="text-xl font-serif">Narrator Voice</h2>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {VOICE_OPTIONS.map((voice) => (
+              <button
+                key={voice.id}
+                onClick={() => dispatch({ type: 'SET_VOICE_ID', voiceId: voice.id })}
+                className={`px-3 py-2 rounded-lg border-2 transition-all text-left ${
+                  state.voiceSettings.voiceId === voice.id
+                    ? 'bg-primary/20 border-primary text-primary'
+                    : 'border-border text-muted-foreground hover:border-primary/50'
+                }`}
+              >
+                <div className="font-medium">{voice.name}</div>
+                <div className="text-xs opacity-75">{voice.description}</div>
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>Speed: {state.voiceSettings.speed.toFixed(1)}x</Label>
+              <span className="text-xs text-muted-foreground">
+                {state.voiceSettings.speed < 0.9 ? 'Slow' : state.voiceSettings.speed > 1.1 ? 'Fast' : 'Normal'}
+              </span>
+            </div>
+            <Slider
+              value={[state.voiceSettings.speed]}
+              onValueChange={([value]) => dispatch({ type: 'SET_VOICE_SPEED', speed: value })}
+              min={0.7}
+              max={1.2}
+              step={0.1}
+              className="w-full"
+            />
+          </div>
+
+          <Button
+            variant="outline"
+            onClick={handlePreviewVoice}
+            disabled={isVoiceLoading}
+            className="w-full"
+          >
+            {isVoiceLoading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Volume2 className="w-4 h-4 mr-2" />
+            )}
+            {isPlaying ? 'Stop Preview' : 'Preview Voice'}
+          </Button>
         </div>
 
         {/* Settings */}

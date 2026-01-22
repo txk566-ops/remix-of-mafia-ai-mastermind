@@ -20,7 +20,10 @@ import {
 export function GameDashboard() {
   const { state, dispatch } = useGame();
   const [timerSeconds, setTimerSeconds] = useState(state.discussionTimeSeconds);
-  const { speak, stop, isPlaying, isLoading: isVoiceLoading } = useVoiceNarration();
+  const { speak, stop, isPlaying, isLoading: isVoiceLoading } = useVoiceNarration({
+    voiceId: state.voiceSettings.voiceId,
+    speed: state.voiceSettings.speed,
+  });
   const [voiceEnabled, setVoiceEnabled] = useState(true);
 
   const alivePlayers = state.players.filter(p => p.isAlive);

@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 
 interface UseVoiceNarrationOptions {
   voiceId?: string;
+  speed?: number;
 }
 
 export function useVoiceNarration(options: UseVoiceNarrationOptions = {}) {
@@ -36,7 +37,8 @@ export function useVoiceNarration(options: UseVoiceNarrationOptions = {}) {
           },
           body: JSON.stringify({ 
             text,
-            voiceId: options.voiceId 
+            voiceId: options.voiceId,
+            speed: options.speed,
           }),
         }
       );
@@ -71,7 +73,7 @@ export function useVoiceNarration(options: UseVoiceNarrationOptions = {}) {
     } finally {
       setIsLoading(false);
     }
-  }, [options.voiceId]);
+  }, [options.voiceId, options.speed]);
 
   const stop = useCallback(() => {
     if (audioRef.current) {
