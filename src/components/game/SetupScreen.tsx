@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { Skull, Plus, Users, Sparkles, Play, Volume2, Loader2, Key } from 'lucide-react';
+import { Skull, Plus, Users, Play, Volume2, Loader2, Key } from 'lucide-react';
 import { NarratorMode } from '@/types/game';
 import { VOICE_OPTIONS } from '@/data/voiceOptions';
 import { useVoiceNarration } from '@/hooks/useVoiceNarration';
@@ -13,16 +13,6 @@ import { PlayerDetailsInput } from './PlayerDetailsInput';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const THEME_SUGGESTIONS = [
-  'Noir detective in a smoky 1940s city',
-  'Medieval court intrigue',
-  'Space station horror',
-  'Miami nightclub in the 80s',
-  'Corporate boardroom thriller',
-  'Reality TV elimination show',
-  'Wild West frontier town',
-  'Ancient Rome senate',
-];
 
 export function SetupScreen() {
   const { state, dispatch } = useGame();
@@ -171,36 +161,6 @@ export function SetupScreen() {
           )}
         </div>
 
-        {/* Theme Section */}
-        <div className="mafia-card space-y-4">
-          <div className="flex items-center gap-2 text-secondary">
-            <Sparkles className="w-5 h-5" />
-            <h2 className="text-xl font-serif">Theme</h2>
-          </div>
-
-          <Input
-            placeholder="Enter your theme..."
-            value={state.theme}
-            onChange={(e) => dispatch({ type: 'SET_THEME', theme: e.target.value })}
-            className="bg-muted border-border"
-          />
-
-          <div className="flex flex-wrap gap-2">
-            {THEME_SUGGESTIONS.slice(0, 4).map((theme) => (
-              <button
-                key={theme}
-                onClick={() => dispatch({ type: 'SET_THEME', theme })}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
-                  state.theme === theme
-                    ? 'bg-primary/20 border-primary text-primary'
-                    : 'border-border text-muted-foreground hover:border-primary/50'
-                }`}
-              >
-                {theme}
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* Narrator Mode */}
         <div className="mafia-card space-y-4">

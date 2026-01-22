@@ -59,7 +59,7 @@ export interface GameState {
   votes: Vote[];
   detectiveResults: DetectiveResult[];
   currentRound: number;
-  theme: string;
+  
   narratorMode: NarratorMode;
   discussionTimerEnabled: boolean;
   discussionTimeSeconds: number;
