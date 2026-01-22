@@ -18,7 +18,6 @@ import { DEFAULT_VOICE_ID, DEFAULT_SPEED } from '@/data/voiceOptions';
 type GameAction =
   | { type: 'ADD_PLAYER'; name: string }
   | { type: 'REMOVE_PLAYER'; id: string }
-  | { type: 'SET_THEME'; theme: string }
   | { type: 'SET_NARRATOR_MODE'; mode: NarratorMode }
   | { type: 'SET_DISCUSSION_TIMER'; enabled: boolean }
   | { type: 'SET_API_KEY'; key: string }
@@ -58,7 +57,7 @@ const initialState: GameState = {
   votes: [],
   detectiveResults: [],
   currentRound: 1,
-  theme: 'Noir detective in a smoky 1940s city',
+  
   narratorMode: 'ADULT',
   discussionTimerEnabled: false,
   discussionTimeSeconds: 120,
@@ -135,8 +134,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         players: state.players.filter(p => p.id !== action.id),
       };
 
-    case 'SET_THEME':
-      return { ...state, theme: action.theme };
 
     case 'SET_NARRATOR_MODE':
       return { ...state, narratorMode: action.mode };
@@ -385,7 +382,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           // Preserve details and detailsSource
         })),
         apiKey: state.apiKey,
-        theme: state.theme,
+        
         narratorMode: state.narratorMode,
         doctorSelfHealUsed: false,
         lastSavedPlayer: null,

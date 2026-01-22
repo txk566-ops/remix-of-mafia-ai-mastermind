@@ -37,7 +37,7 @@ Factory worker—plane piloted by Pakistani crashed in. Everyone died except pla
 
 Respond only as Narrator. Start each turn: "Night/Day [Number]: [Story Title]" → narrative → game update.
 Theme:
-The user will provide a theme string. Stay in that vibe.
+Noir detective in a smoky 1940s city - stay in that vibe throughout.
 
 Player Bios:
 • Some players have custom bios/details - use them as SUBTLE flavor, not plot points
@@ -75,7 +75,7 @@ export async function generateNarration(request: NarrationRequest): Promise<stri
   const userPrompt = `You are narrating a Mafia game.
 
 MODE: ${state.narratorMode}
-THEME: "${state.theme}"
+THEME: "Noir detective in a smoky 1940s city"
 
 PHASE: ${formatPhase(state.phase)}
 
