@@ -163,7 +163,7 @@ export function GameDashboard() {
               ) : (
                 deadPlayers.map(player => (
                   <div key={player.id} className="px-3 py-2 rounded-lg bg-muted/20 text-muted-foreground">
-                    {player.name} <span className="text-xs opacity-60">({player.role})</span>
+                    {player.name}
                   </div>
                 ))
               )}

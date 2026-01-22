@@ -162,7 +162,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         killedPlayer = state.players.find(p => p.id === mafiaTarget) || null;
         newEvents.push({
           phase: 'night',
-          description: `${killedPlayer?.name} was killed by the Mafia. They were a ${killedPlayer?.role}.`,
+          description: `${killedPlayer?.name} was killed by the Mafia.`,
           isPublic: true,
         });
       } else if (mafiaTarget && mafiaTarget === doctorTarget) {
@@ -284,7 +284,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           lastVotedOutPlayer: eliminatedPlayer || null,
           gameEvents: [...state.gameEvents, {
             phase: 'voting',
-            description: `${eliminatedPlayer?.name} was voted out. They were a ${eliminatedPlayer?.role}.`,
+            description: `${eliminatedPlayer?.name} was voted out.`,
             isPublic: true,
           }],
         };
