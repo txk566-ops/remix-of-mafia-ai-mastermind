@@ -1,18 +1,30 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Player, Role, DetectiveResult } from '@/types/game';
-import { Skull, Search, Shield, Check } from 'lucide-react';
+import { Skull, Search, Shield, Check, Users } from 'lucide-react';
 
 interface NightActionScreenProps {
   player: Player;
   alivePlayers: Player[];
+  allPlayers: Player[];
+  existingMafiaTarget: string | null;
   onComplete: (action?: { targetId: string; result?: DetectiveResult }) => void;
 }
 
-export function NightActionScreen({ player, alivePlayers, onComplete }: NightActionScreenProps) {
+export function NightActionScreen({ player, alivePlayers, allPlayers, existingMafiaTarget, onComplete }: NightActionScreenProps) {
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null);
   const [detectiveResult, setDetectiveResult] = useState<DetectiveResult | null>(null);
   const [confirmed, setConfirmed] = useState(false);
+
+  // Get other mafia members for mafia players
+  const otherMafia = allPlayers.filter(p => 
+    p.role === 'Mafia' && p.id !== player.id && p.isAlive
+  );
+
+  // Get the target name if already set by another mafia
+  const existingTargetPlayer = existingMafiaTarget 
+    ? alivePlayers.find(p => p.id === existingMafiaTarget)
+    : null;
 
   // Filter out self for targeting (except doctor can protect self)
   const validTargets = alivePlayers.filter(p => {
@@ -51,6 +63,14 @@ export function NightActionScreen({ player, alivePlayers, onComplete }: NightAct
     }
   };
 
+  const handleMafiaAcknowledge = () => {
+    // Second mafia acknowledges the target without changing it
+    setConfirmed(true);
+    setTimeout(() => {
+      onComplete(); // Complete without setting a new target
+    }, 500);
+  };
+
   const getRoleIcon = () => {
     switch (player.role) {
       case 'Mafia': return <Skull className="w-8 h-8 text-primary" />;
@@ -86,6 +106,60 @@ export function NightActionScreen({ player, alivePlayers, onComplete }: NightAct
       default: return 'Confirm';
     }
   };
+
+  // Mafia info screen when target already picked by partner
+  if (player.role === 'Mafia' && existingTargetPlayer) {
+    if (confirmed) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-night p-6 space-y-8">
+          <div className="flex items-center gap-3 text-primary">
+            <Skull className="w-8 h-8" />
+            <h2 className="text-2xl font-serif">Acknowledged</h2>
+          </div>
+          <div className="animate-scale-in">
+            <Check className="w-16 h-16 text-mafia-safe" />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-night p-6 space-y-8">
+        <div className="flex items-center gap-3 text-primary">
+          <Skull className="w-8 h-8" />
+          <h2 className="text-2xl font-serif">Mafia</h2>
+        </div>
+        
+        {otherMafia.length > 0 && (
+          <div className="mafia-card text-center space-y-2 max-w-sm">
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+              <Users className="w-4 h-4" />
+              <span className="text-sm">Your fellow Mafia:</span>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2">
+              {otherMafia.map(m => (
+                <span key={m.id} className="text-primary font-bold">{m.name}</span>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        <div className="mafia-card text-center space-y-4 max-w-sm">
+          <p className="text-muted-foreground">Your partner has marked for death:</p>
+          <p className="text-4xl font-bold text-primary">{existingTargetPlayer.name}</p>
+          <p className="text-sm text-muted-foreground">🔪 The deed is done.</p>
+        </div>
+        
+        <Button
+          onClick={handleMafiaAcknowledge}
+          className="py-4 px-8 bg-gradient-danger"
+        >
+          <Check className="w-5 h-5 mr-2" />
+          Got It
+        </Button>
+      </div>
+    );
+  }
 
   // Show detective result
   if (detectiveResult) {
@@ -144,6 +218,21 @@ export function NightActionScreen({ player, alivePlayers, onComplete }: NightAct
         {getRoleIcon()}
         <h2 className="text-2xl font-serif">{player.role}</h2>
       </div>
+      
+      {/* Show other mafia members to mafia player */}
+      {player.role === 'Mafia' && otherMafia.length > 0 && (
+        <div className="mafia-card text-center space-y-2 max-w-sm py-3">
+          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+            <Users className="w-4 h-4" />
+            <span className="text-sm">Your fellow Mafia:</span>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {otherMafia.map(m => (
+              <span key={m.id} className="text-primary font-bold">{m.name}</span>
+            ))}
+          </div>
+        </div>
+      )}
       
       <p className="text-muted-foreground text-lg">{getActionText()}</p>
       
