@@ -21,6 +21,7 @@ type GameAction =
   | { type: 'SET_DISCUSSION_TIMER'; enabled: boolean }
   | { type: 'SET_API_KEY'; key: string }
   | { type: 'START_GAME' }
+  | { type: 'CONTINUE_TO_ROLE_REVEAL' }
   | { type: 'REVEAL_ROLE'; playerId: string }
   | { type: 'ALL_ROLES_REVEALED' }
   | { type: 'SET_MAFIA_TARGET'; targetId: string }
@@ -35,6 +36,7 @@ type GameAction =
   | { type: 'SET_IS_NARRATING'; isNarrating: boolean }
   | { type: 'ADD_DETECTIVE_RESULT'; result: DetectiveResult }
   | { type: 'RESET_GAME' }
+  | { type: 'FULL_RESET' }
   | { type: 'SET_PHASE'; phase: GamePhase };
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
@@ -107,12 +109,18 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         players: playersWithRoles,
-        phase: 'role-reveal',
+        phase: 'role-distribution',
         gameEvents: [{
           phase: 'setup',
           description: 'The game has begun. Roles have been assigned.',
           isPublic: true,
         }],
+      };
+
+    case 'CONTINUE_TO_ROLE_REVEAL':
+      return {
+        ...state,
+        phase: 'role-reveal',
       };
 
     case 'REVEAL_ROLE':
@@ -316,11 +324,25 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, phase: action.phase };
 
     case 'RESET_GAME':
+      // Keep players but reset their roles and game state
       return {
         ...initialState,
+        players: state.players.map(p => ({
+          ...p,
+          role: null,
+          isAlive: true,
+          hasRevealedRole: false,
+        })),
         apiKey: state.apiKey,
         theme: state.theme,
         narratorMode: state.narratorMode,
+      };
+
+    case 'FULL_RESET':
+      // Complete reset to initial state
+      return {
+        ...initialState,
+        apiKey: state.apiKey,
       };
 
     default:

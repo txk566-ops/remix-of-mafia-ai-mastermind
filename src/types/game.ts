@@ -2,6 +2,7 @@ export type Role = 'Mafia' | 'Detective' | 'Doctor' | 'Villager';
 
 export type GamePhase = 
   | 'setup'
+  | 'role-distribution'
   | 'role-reveal'
   | 'night'
   | 'morning'

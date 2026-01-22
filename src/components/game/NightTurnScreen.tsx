@@ -2,9 +2,20 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { useGame } from '@/context/GameContext';
 import { Player, DetectiveResult } from '@/types/game';
-import { Moon, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Moon, ArrowRight, Eye, EyeOff, XCircle } from 'lucide-react';
 import { NightActionScreen } from './NightActionScreen';
 import { MiniGameSelector } from './mini-games/MiniGameSelector';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 type TurnState = 'waiting' | 'ready' | 'action' | 'complete';
 
@@ -28,6 +39,10 @@ export function NightTurnScreen() {
   const currentPlayer = turnOrder[currentTurnIndex];
   const alivePlayers = state.players.filter(p => p.isAlive);
   const isLastPlayer = currentTurnIndex === turnOrder.length - 1;
+
+  const handleEndGame = () => {
+    dispatch({ type: 'FULL_RESET' });
+  };
 
   const handleReady = () => {
     setTurnState('action');
@@ -67,10 +82,39 @@ export function NightTurnScreen() {
     }
   };
 
+  // End Game Button component
+  const EndGameButton = () => (
+    <div className="absolute top-4 right-4">
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
+            <XCircle className="w-5 h-5 mr-1" />
+            End Game
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>End Game?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to end the game? This will return everyone to the setup screen.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleEndGame} className="bg-primary hover:bg-primary/90">
+              End Game
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+
   // Waiting screen - "Pass phone to [Name]"
   if (turnState === 'waiting' && currentPlayer) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-night p-6 space-y-8">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-night p-6 space-y-8 relative">
+        <EndGameButton />
         <Moon className="w-16 h-16 text-mafia-purple animate-pulse" />
         
         <div className="text-center space-y-4">
@@ -149,7 +193,8 @@ export function NightTurnScreen() {
     const nextPlayer = turnOrder[currentTurnIndex + 1];
     
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-night p-6 space-y-8">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-night p-6 space-y-8 relative">
+        <EndGameButton />
         <div className="text-mafia-safe text-6xl animate-scale-in">✓</div>
         
         <div className="text-center space-y-2">

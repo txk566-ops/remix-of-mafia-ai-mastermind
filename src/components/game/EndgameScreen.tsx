@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
 import { generateNarration, getPhaseInstruction } from '@/services/narratorService';
-import { Trophy, Skull, RotateCcw, Crown, Users, Shield, Search } from 'lucide-react';
+import { Trophy, Skull, RotateCcw, Crown, Users, Shield, Search, RefreshCw } from 'lucide-react';
 import { Role } from '@/types/game';
 
 const ROLE_ICONS: Record<Role, React.ReactNode> = {
@@ -33,6 +33,10 @@ export function EndgameScreen() {
 
   const handlePlayAgain = () => {
     dispatch({ type: 'RESET_GAME' });
+  };
+
+  const handleNewGame = () => {
+    dispatch({ type: 'FULL_RESET' });
   };
 
   const villageWon = state.winner === 'village';
@@ -139,14 +143,24 @@ export function EndgameScreen() {
           </div>
         </div>
 
-        {/* Play Again */}
-        <Button
-          onClick={handlePlayAgain}
-          className="w-full py-6 text-xl font-serif bg-gradient-gold text-secondary-foreground hover:opacity-90 mafia-glow-gold"
-        >
-          <RotateCcw className="w-6 h-6 mr-2" />
-          Play Again
-        </Button>
+        {/* Play Again Options */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Button
+            onClick={handlePlayAgain}
+            className="flex-1 py-6 text-lg font-serif bg-gradient-gold text-secondary-foreground hover:opacity-90 mafia-glow-gold"
+          >
+            <RotateCcw className="w-5 h-5 mr-2" />
+            Play Again (Same Players)
+          </Button>
+          <Button
+            onClick={handleNewGame}
+            variant="outline"
+            className="flex-1 py-6 text-lg font-serif border-2 hover:bg-muted"
+          >
+            <RefreshCw className="w-5 h-5 mr-2" />
+            New Game
+          </Button>
+        </div>
       </div>
     </div>
   );
