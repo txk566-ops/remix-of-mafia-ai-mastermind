@@ -41,11 +41,6 @@ export function GameDashboard() {
       });
       dispatch({ type: 'SET_NARRATION', narration });
       dispatch({ type: 'SET_IS_NARRATING', isNarrating: false });
-      
-      // Auto-play voice narration if enabled
-      if (voiceEnabled && narration) {
-        speak(narration);
-      }
     };
 
     if (state.phase !== 'setup' && state.phase !== 'role-reveal' && state.phase !== 'endgame' && state.phase !== 'night') {
@@ -86,11 +81,6 @@ export function GameDashboard() {
     });
     dispatch({ type: 'SET_NARRATION', narration });
     dispatch({ type: 'SET_IS_NARRATING', isNarrating: false });
-    
-    // Auto-play voice narration if enabled
-    if (voiceEnabled && narration) {
-      speak(narration);
-    }
   };
 
   const handlePlayNarration = () => {
@@ -139,12 +129,11 @@ export function GameDashboard() {
   return (
     <div className="min-h-screen bg-gradient-night p-4 sm:p-6 relative">
       {/* End Game Button */}
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-4 left-4 z-10">
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
-              <XCircle className="w-5 h-5 mr-1" />
-              End Game
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" title="End Game">
+              <XCircle className="w-5 h-5" />
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>

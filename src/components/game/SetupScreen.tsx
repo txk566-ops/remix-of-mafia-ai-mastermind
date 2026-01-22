@@ -171,7 +171,7 @@ export function SetupScreen() {
               <button
                 key={mode}
                 onClick={() => dispatch({ type: 'SET_NARRATOR_MODE', mode })}
-                className={`px-4 py-3 rounded-lg border-2 transition-all font-medium ${
+                className={`px-2 py-3 rounded-lg border-2 transition-all font-medium text-sm whitespace-nowrap ${
                   state.narratorMode === mode
                     ? mode === 'UNHINGED'
                       ? 'bg-gradient-danger border-primary text-primary-foreground mafia-glow-red'
