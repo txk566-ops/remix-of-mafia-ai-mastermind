@@ -169,6 +169,7 @@ export function NightTurnScreen() {
           alivePlayers={alivePlayers}
           allPlayers={state.players}
           existingMafiaTarget={state.nightActions.mafiaTarget}
+          doctorSelfHealUsed={state.doctorSelfHealUsed}
           onComplete={handleActionComplete}
         />
       );
