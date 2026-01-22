@@ -2,9 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
 import { generateNarration, getPhaseInstruction } from '@/services/narratorService';
-import { Sun, MessageSquare, Vote, Skull, RefreshCw, ArrowRight, Clock, Users, Volume2, VolumeX, Loader2 } from 'lucide-react';
+import { Sun, MessageSquare, Vote, Skull, RefreshCw, ArrowRight, Clock, Users, Volume2, VolumeX, Loader2, XCircle } from 'lucide-react';
 import { NightTurnScreen } from './NightTurnScreen';
 import { useVoiceNarration } from '@/hooks/useVoiceNarration';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export function GameDashboard() {
   const { state, dispatch } = useGame();
@@ -118,8 +129,38 @@ export function GameDashboard() {
     }
   };
 
+  const handleEndGame = () => {
+    dispatch({ type: 'FULL_RESET' });
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-night p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-night p-4 sm:p-6 relative">
+      {/* End Game Button */}
+      <div className="absolute top-4 right-4 z-10">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
+              <XCircle className="w-5 h-5 mr-1" />
+              End Game
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>End Game?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to end the game? This will return everyone to the setup screen.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleEndGame} className="bg-primary hover:bg-primary/90">
+                End Game
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Phase Header */}
         <div className={`flex items-center justify-center gap-3 ${getPhaseColor()}`}>

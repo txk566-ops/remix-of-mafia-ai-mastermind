@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
-import { Eye, EyeOff, Check, ArrowRight, Skull, Shield, Search, Users } from 'lucide-react';
+import { Eye, EyeOff, Check, ArrowRight, Skull, Shield, Search, Users, XCircle } from 'lucide-react';
 import { Role } from '@/types/game';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const ROLE_ICONS: Record<Role, React.ReactNode> = {
   Mafia: <Skull className="w-16 h-16" />,
@@ -57,10 +68,43 @@ export function RoleRevealScreen() {
     dispatch({ type: 'ALL_ROLES_REVEALED' });
   };
 
+  const handleEndGame = () => {
+    dispatch({ type: 'FULL_RESET' });
+  };
+
+  // End Game Button component
+  const EndGameButton = () => (
+    <div className="absolute top-4 right-4">
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
+            <XCircle className="w-5 h-5 mr-1" />
+            End Game
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>End Game?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to end the game? This will return everyone to the setup screen.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleEndGame} className="bg-primary hover:bg-primary/90">
+              End Game
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+
   // Show role reveal card
   if (selectedPlayer && !selectedPlayer.hasRevealedRole) {
     return (
-      <div className="min-h-screen bg-gradient-night p-6 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-gradient-night p-6 flex flex-col items-center justify-center relative">
+        <EndGameButton />
         <div className="w-full max-w-md space-y-8 animate-scale-in">
           <div className="text-center">
             <h2 className="text-3xl font-serif text-secondary mb-2">{selectedPlayer.name}</h2>
@@ -130,7 +174,8 @@ export function RoleRevealScreen() {
 
   // Show player selection grid
   return (
-    <div className="min-h-screen bg-gradient-night p-6 flex flex-col items-center">
+    <div className="min-h-screen bg-gradient-night p-6 flex flex-col items-center relative">
+      <EndGameButton />
       <div className="w-full max-w-2xl space-y-8 animate-fade-in">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-serif font-bold text-gradient-danger">

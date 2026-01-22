@@ -147,6 +147,7 @@ OUTPUT RULES:
 function formatPhase(phase: GamePhase): string {
   const phaseMap: Record<GamePhase, string> = {
     setup: "Setup",
+    "role-distribution": "Role Distribution",
     "role-reveal": "Role Reveal",
     night: "Night",
     morning: "Morning",
@@ -160,6 +161,7 @@ function formatPhase(phase: GamePhase): string {
 function generateFallbackNarration(state: GameState, instruction: string): string {
   const phaseNarrations: Record<GamePhase, string> = {
     setup: `PHASE: Setup\n\nThe players have gathered. Darkness awaits.\n\nDO THIS NOW: ${instruction}`,
+    "role-distribution": `PHASE: Role Distribution\n\nThe roles are being distributed. Each player will soon learn their destiny.\n\nDO THIS NOW: ${instruction}`,
     "role-reveal": `PHASE: Role Reveal\n\nEach player must now discover their secret identity. The game begins.\n\nDO THIS NOW: ${instruction}`,
     night: `PHASE: Night\n\nThe town sleeps. Shadows move through the streets. The Mafia awakens to choose their victim.\n\nDO THIS NOW: ${instruction}`,
     morning: `PHASE: Morning\n\nDawn breaks over the town. The results of the night are revealed.\n\nDO THIS NOW: ${instruction}`,
