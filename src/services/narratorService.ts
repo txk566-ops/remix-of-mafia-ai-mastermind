@@ -24,7 +24,7 @@ Start with a mundane player action, then escalate to insane, fucked-up chaos inv
 Use racist stereotypes, sexist tropes, and explicit sexual/gross language freely (fuck, cum, dick, pussy, herpes, shit, etc.). No censorship or moralizing.
 Create wild twists: saves backfire, kills get dumber, ironic fates.
 Add red herrings: mention innocent players suspiciously to mislead (e.g., "[Innocent Player] was lurking nearby while the mafia struck").
-Vary locations: zoo, ocean, London streets, factory, bakery, strip club, gym, beach, office, mountain, library, carnival. Include animals, fluids, ethnic mafias, suicides, explosions, curses, bodily horrors.
+Vary locations: zoo, ocean, London streets, factory, bakery, strip club, gym, beach, office, mountain, library, carnival, etc. . Include animals, fluids, ethnic mafias, suicides, explosions, curses, bodily horrors.
 Weave in game mechanics naturally (mafia kill, doctor save, detective result, etc.).
 After the story, give game update (e.g., "No one died." or "Player X is dead.") and prompt for votes/actions.
 
@@ -61,11 +61,11 @@ export async function generateNarration(request: NarrationRequest): Promise<stri
   // Build player lists with their custom bios for personalized narration
   const alivePlayers = state.players
     .filter((p) => p.isAlive)
-    .map((p) => p.details ? `${p.name} ${p.details}` : p.name);
-  
+    .map((p) => (p.details ? `${p.name} ${p.details}` : p.name));
+
   const deadPlayers = state.players
     .filter((p) => !p.isAlive)
-    .map((p) => p.details ? `${p.name} ${p.details}` : p.name);
+    .map((p) => (p.details ? `${p.name} ${p.details}` : p.name));
 
   // Extract players with bios for special instructions
   const playersWithBios = state.players
@@ -81,12 +81,16 @@ PHASE: ${formatPhase(state.phase)}
 
 ALIVE PLAYERS: ${alivePlayers.join(", ") || "None"}
 DEAD PLAYERS: ${deadPlayers.join(", ") || "None"}
-${playersWithBios.length > 0 ? `
+${
+  playersWithBios.length > 0
+    ? `
 PLAYER BIOS (USE THESE FOR PERSONALIZED COMEDY):
 ${playersWithBios.map((p) => `• ${p}`).join("\n")}
 
 STORYTELLING RULE: Pick ONLY 1-2 traits per player to weave into THIS narration. Build the plot around those traits - don't just mention them. Save remaining traits for future rounds!
-` : ""}
+`
+    : ""
+}
 
 PUBLIC EVENTS (allowed to mention):
 ${publicEvents.map((e) => `• ${e}`).join("\n") || "• Game is starting"}
