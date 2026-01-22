@@ -58,14 +58,28 @@ declare global {
 export function PlayerDetailsInput({ player, onUpdateRawDetails, onRemove }: PlayerDetailsInputProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isRestarting, setIsRestarting] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const shouldRestartRef = useRef(false);
+  
+  // Use refs to avoid useEffect dependency issues
+  const rawDetailsRef = useRef(player.rawDetails);
+  const onUpdateRawDetailsRef = useRef(onUpdateRawDetails);
+
+  // Keep refs in sync
+  useEffect(() => {
+    rawDetailsRef.current = player.rawDetails;
+  }, [player.rawDetails]);
+
+  useEffect(() => {
+    onUpdateRawDetailsRef.current = onUpdateRawDetails;
+  }, [onUpdateRawDetails]);
 
   const hasRegistryDetails = player.detailsSource === 'registry';
   const hasCustomDetails = player.detailsSource === 'custom';
   const hasAnyDetails = player.rawDetails.length > 0 || player.details.length > 0;
 
-  // Initialize speech recognition
+  // Initialize speech recognition (only once)
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
@@ -82,32 +96,55 @@ export function PlayerDetailsInput({ player, onUpdateRawDetails, onRemove }: Pla
           }
         }
         if (finalTranscript) {
-          onUpdateRawDetails(player.rawDetails + ' ' + finalTranscript.trim());
+          const currentDetails = rawDetailsRef.current;
+          const separator = currentDetails.trim() ? ' ' : '';
+          onUpdateRawDetailsRef.current(currentDetails + separator + finalTranscript.trim());
         }
       };
 
       recognitionRef.current.onerror = (event) => {
         console.error('Speech recognition error:', event);
         // Don't stop on errors, try to restart if we should be recording
-        if (shouldRestartRef.current && recognitionRef.current) {
-          try {
-            recognitionRef.current.start();
-          } catch (e) {
-            // Ignore - might already be started
-          }
+        if (shouldRestartRef.current) {
+          setIsRestarting(true);
+          setTimeout(() => {
+            if (shouldRestartRef.current && recognitionRef.current) {
+              try {
+                recognitionRef.current.start();
+                setIsRestarting(false);
+              } catch (e) {
+                console.error('Failed to restart after error:', e);
+                setIsRestarting(false);
+              }
+            }
+          }, 100);
         }
       };
 
-      // Auto-restart when it ends (browser stops after silence)
+      // Auto-restart when browser ends session after silence
       recognitionRef.current.onend = () => {
-        if (shouldRestartRef.current && recognitionRef.current) {
-          try {
-            recognitionRef.current.start();
-          } catch (e) {
-            // Ignore - might already be started
-          }
+        if (shouldRestartRef.current) {
+          // Show restarting indicator
+          setIsRestarting(true);
+          
+          // Delay restart slightly to prevent rapid loops
+          setTimeout(() => {
+            if (shouldRestartRef.current && recognitionRef.current) {
+              try {
+                recognitionRef.current.start();
+                setIsRestarting(false);
+              } catch (e) {
+                console.error('Failed to restart recognition:', e);
+                setIsRestarting(false);
+                setIsRecording(false);
+              }
+            } else {
+              setIsRestarting(false);
+            }
+          }, 100);
         } else {
           setIsRecording(false);
+          setIsRestarting(false);
         }
       };
     }
@@ -118,7 +155,7 @@ export function PlayerDetailsInput({ player, onUpdateRawDetails, onRemove }: Pla
         recognitionRef.current.abort();
       }
     };
-  }, [player.rawDetails, onUpdateRawDetails]);
+  }, []); // Empty deps - only initialize once
 
   const toggleRecording = () => {
     if (!recognitionRef.current) {
@@ -219,7 +256,7 @@ export function PlayerDetailsInput({ player, onUpdateRawDetails, onRemove }: Pla
           </div>
           {isRecording && (
             <p className="text-xs text-destructive animate-pulse">
-              🎤 Recording... Tap mic to stop
+              {isRestarting ? '🔄 Resuming...' : '🎤 Recording... Tap mic to stop'}
             </p>
           )}
           <p className="text-xs text-muted-foreground">
