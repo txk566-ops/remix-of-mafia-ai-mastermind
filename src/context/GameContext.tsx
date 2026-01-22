@@ -41,7 +41,9 @@ type GameAction =
   | { type: 'FULL_RESET' }
   | { type: 'SET_PHASE'; phase: GamePhase }
   | { type: 'SET_VOICE_ID'; voiceId: string }
-  | { type: 'SET_VOICE_SPEED'; speed: number };
+  | { type: 'SET_VOICE_SPEED'; speed: number }
+  | { type: 'SET_PLAYER_RAW_DETAILS'; playerId: string; rawDetails: string }
+  | { type: 'SET_ALL_FORMATTED_DETAILS'; players: { name: string; details: string }[] };
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -80,7 +82,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'ADD_PLAYER':
       if (state.players.length >= 12) return state;
-      const playerDetails = getPlayerDetails(action.name);
+      const registryDetails = getPlayerDetails(action.name);
+      const hasRegistry = registryDetails !== '';
       return {
         ...state,
         players: [
@@ -88,12 +91,42 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           {
             id: generateId(),
             name: action.name,
-            details: playerDetails,
+            details: registryDetails,
+            rawDetails: '',
+            detailsSource: hasRegistry ? 'registry' : 'none',
             role: null,
             isAlive: true,
             hasRevealedRole: false,
           },
         ],
+      };
+
+    case 'SET_PLAYER_RAW_DETAILS':
+      return {
+        ...state,
+        players: state.players.map(p =>
+          p.id === action.playerId
+            ? { ...p, rawDetails: action.rawDetails }
+            : p
+        ),
+      };
+
+    case 'SET_ALL_FORMATTED_DETAILS':
+      return {
+        ...state,
+        players: state.players.map(p => {
+          const formatted = action.players.find(
+            fp => fp.name.toLowerCase() === p.name.toLowerCase()
+          );
+          if (formatted && p.detailsSource !== 'registry') {
+            return {
+              ...p,
+              details: formatted.details,
+              detailsSource: 'custom' as const,
+            };
+          }
+          return p;
+        }),
       };
 
     case 'REMOVE_PLAYER':
@@ -349,6 +382,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           role: null,
           isAlive: true,
           hasRevealedRole: false,
+          // Preserve details and detailsSource
         })),
         apiKey: state.apiKey,
         theme: state.theme,

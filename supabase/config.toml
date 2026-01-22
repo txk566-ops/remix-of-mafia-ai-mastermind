@@ -1,1 +1,4 @@
 project_id = "jaatferjkymaqimnkhpc"
+
+[functions.format-player-bios]
+verify_jwt = false
