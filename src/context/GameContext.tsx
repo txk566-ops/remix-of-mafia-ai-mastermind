@@ -9,9 +9,11 @@ import {
   DetectiveResult,
   assignRoles,
   checkWinCondition,
-  GameEvent
+  GameEvent,
+  VoiceSettings
 } from '@/types/game';
 import { getPlayerDetails } from '@/data/playerDetails';
+import { DEFAULT_VOICE_ID, DEFAULT_SPEED } from '@/data/voiceOptions';
 
 type GameAction =
   | { type: 'ADD_PLAYER'; name: string }
@@ -37,7 +39,9 @@ type GameAction =
   | { type: 'ADD_DETECTIVE_RESULT'; result: DetectiveResult }
   | { type: 'RESET_GAME' }
   | { type: 'FULL_RESET' }
-  | { type: 'SET_PHASE'; phase: GamePhase };
+  | { type: 'SET_PHASE'; phase: GamePhase }
+  | { type: 'SET_VOICE_ID'; voiceId: string }
+  | { type: 'SET_VOICE_SPEED'; speed: number };
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -66,6 +70,10 @@ const initialState: GameState = {
   lastVotedOutPlayer: null,
   doctorSelfHealUsed: false,
   lastSavedPlayer: null,
+  voiceSettings: {
+    voiceId: DEFAULT_VOICE_ID,
+    speed: DEFAULT_SPEED,
+  },
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -347,6 +355,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         narratorMode: state.narratorMode,
         doctorSelfHealUsed: false,
         lastSavedPlayer: null,
+        voiceSettings: state.voiceSettings,
       };
 
     case 'FULL_RESET':
@@ -356,6 +365,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         apiKey: state.apiKey,
         doctorSelfHealUsed: false,
         lastSavedPlayer: null,
+        voiceSettings: state.voiceSettings,
+      };
+
+    case 'SET_VOICE_ID':
+      return {
+        ...state,
+        voiceSettings: { ...state.voiceSettings, voiceId: action.voiceId },
+      };
+
+    case 'SET_VOICE_SPEED':
+      return {
+        ...state,
+        voiceSettings: { ...state.voiceSettings, speed: action.speed },
       };
 
     default:
