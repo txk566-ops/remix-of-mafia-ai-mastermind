@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { Skull, Plus, Users, Sparkles, Play, Volume2, Loader2, Wand2 } from 'lucide-react';
+import { Skull, Plus, Users, Sparkles, Play, Volume2, Loader2, Key } from 'lucide-react';
 import { NarratorMode } from '@/types/game';
 import { VOICE_OPTIONS } from '@/data/voiceOptions';
 import { useVoiceNarration } from '@/hooks/useVoiceNarration';
@@ -57,50 +57,45 @@ export function SetupScreen() {
   };
 
   const canStartGame = state.players.length >= 4;
+  const hasApiKey = state.apiKey.trim().length > 0;
 
   // Check if there are players with raw details that need formatting
   const playersNeedingFormat = state.players.filter(
-    p => p.detailsSource !== 'registry' && p.rawDetails.trim().length > 0 && p.detailsSource !== 'custom'
+    p => p.detailsSource !== 'registry' && p.rawDetails.trim().length > 0
   );
-  const canFormatBios = playersNeedingFormat.length > 0 && state.apiKey;
 
-  const handleFormatBios = async () => {
-    if (!state.apiKey) {
-      toast.error('Please add your Grok API key first');
-      return;
-    }
+  const handleStartGame = async () => {
+    // Format bios automatically if there are players with raw details
+    if (playersNeedingFormat.length > 0 && hasApiKey) {
+      setIsFormattingBios(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('format-player-bios', {
+          body: {
+            players: playersNeedingFormat.map(p => ({ name: p.name, rawDetails: p.rawDetails })),
+            mode: state.narratorMode,
+            apiKey: state.apiKey,
+          },
+        });
 
-    const playersToFormat = state.players.filter(
-      p => p.detailsSource !== 'registry' && p.rawDetails.trim().length > 0
-    );
+        if (error) throw error;
 
-    if (playersToFormat.length === 0) {
-      toast.info('No player bios to format');
-      return;
-    }
-
-    setIsFormattingBios(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('format-player-bios', {
-        body: {
-          players: playersToFormat.map(p => ({ name: p.name, rawDetails: p.rawDetails })),
-          mode: state.narratorMode,
-          apiKey: state.apiKey,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data.players) {
-        dispatch({ type: 'SET_ALL_FORMATTED_DETAILS', players: data.players });
-        toast.success(`Formatted ${data.players.length} player bio${data.players.length > 1 ? 's' : ''}!`);
+        if (data.players) {
+          dispatch({ type: 'SET_ALL_FORMATTED_DETAILS', players: data.players });
+        }
+      } catch (error) {
+        console.error('Failed to format bios:', error);
+        toast.error('Failed to format bios, starting without custom details');
+      } finally {
+        setIsFormattingBios(false);
       }
-    } catch (error) {
-      console.error('Failed to format bios:', error);
-      toast.error('Failed to format bios. Check your API key.');
-    } finally {
-      setIsFormattingBios(false);
     }
+    
+    dispatch({ type: 'START_GAME' });
+  };
+
+  const scrollToApiKey = () => {
+    document.getElementById('api-key')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('api-key')?.focus();
   };
 
   return (
@@ -163,20 +158,15 @@ export function SetupScreen() {
             ))}
           </div>
 
-          {/* Format Bios Button */}
-          {state.players.some(p => p.detailsSource !== 'registry') && (
+          {/* Show hint if new players need API key for bios */}
+          {playersNeedingFormat.length > 0 && !hasApiKey && (
             <Button
-              onClick={handleFormatBios}
-              disabled={!canFormatBios || isFormattingBios}
+              onClick={scrollToApiKey}
               variant="outline"
-              className="w-full"
+              className="w-full border-secondary text-secondary hover:bg-secondary/10"
             >
-              {isFormattingBios ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Wand2 className="w-4 h-4 mr-2" />
-              )}
-              {isFormattingBios ? 'Formatting...' : 'Format New Bios with AI'}
+              <Key className="w-4 h-4 mr-2" />
+              Add Grok API Key for Custom Bios
             </Button>
           )}
         </div>
@@ -332,12 +322,21 @@ export function SetupScreen() {
 
         {/* Start Game */}
         <Button
-          onClick={() => dispatch({ type: 'START_GAME' })}
-          disabled={!canStartGame}
+          onClick={handleStartGame}
+          disabled={!canStartGame || isFormattingBios}
           className="w-full py-6 text-xl font-serif bg-gradient-danger hover:opacity-90 transition-all mafia-glow-red disabled:opacity-50 disabled:shadow-none"
         >
-          <Play className="w-6 h-6 mr-2" />
-          Start Game
+          {isFormattingBios ? (
+            <>
+              <Loader2 className="w-6 h-6 mr-2 animate-spin" />
+              Preparing Bios...
+            </>
+          ) : (
+            <>
+              <Play className="w-6 h-6 mr-2" />
+              Start Game
+            </>
+          )}
         </Button>
       </div>
     </div>

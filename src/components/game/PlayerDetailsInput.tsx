@@ -59,10 +59,11 @@ export function PlayerDetailsInput({ player, onUpdateRawDetails, onRemove }: Pla
   const [isExpanded, setIsExpanded] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const shouldRestartRef = useRef(false);
 
   const hasRegistryDetails = player.detailsSource === 'registry';
   const hasCustomDetails = player.detailsSource === 'custom';
-  const hasAnyDetails = player.details.length > 0;
+  const hasAnyDetails = player.rawDetails.length > 0 || player.details.length > 0;
 
   // Initialize speech recognition
   useEffect(() => {
@@ -85,16 +86,34 @@ export function PlayerDetailsInput({ player, onUpdateRawDetails, onRemove }: Pla
         }
       };
 
-      recognitionRef.current.onerror = () => {
-        setIsRecording(false);
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error:', event);
+        // Don't stop on errors, try to restart if we should be recording
+        if (shouldRestartRef.current && recognitionRef.current) {
+          try {
+            recognitionRef.current.start();
+          } catch (e) {
+            // Ignore - might already be started
+          }
+        }
       };
 
+      // Auto-restart when it ends (browser stops after silence)
       recognitionRef.current.onend = () => {
-        setIsRecording(false);
+        if (shouldRestartRef.current && recognitionRef.current) {
+          try {
+            recognitionRef.current.start();
+          } catch (e) {
+            // Ignore - might already be started
+          }
+        } else {
+          setIsRecording(false);
+        }
       };
     }
 
     return () => {
+      shouldRestartRef.current = false;
       if (recognitionRef.current) {
         recognitionRef.current.abort();
       }
@@ -108,9 +127,13 @@ export function PlayerDetailsInput({ player, onUpdateRawDetails, onRemove }: Pla
     }
 
     if (isRecording) {
+      // Stop recording
+      shouldRestartRef.current = false;
       recognitionRef.current.stop();
       setIsRecording(false);
     } else {
+      // Start recording - keep going until manually stopped
+      shouldRestartRef.current = true;
       recognitionRef.current.start();
       setIsRecording(true);
     }
@@ -196,20 +219,11 @@ export function PlayerDetailsInput({ player, onUpdateRawDetails, onRemove }: Pla
           </div>
           {isRecording && (
             <p className="text-xs text-destructive animate-pulse">
-              🎤 Listening... Speak now
+              🎤 Recording... Tap mic to stop
             </p>
           )}
           <p className="text-xs text-muted-foreground">
-            Tip: Describe their personality, habits, or funny quirks. The AI will format it for narration.
-          </p>
-        </div>
-      )}
-
-      {/* Show preview of registry details */}
-      {hasRegistryDetails && (
-        <div className="px-3 pb-2 pt-0">
-          <p className="text-xs text-muted-foreground truncate" title={player.details}>
-            {player.details.slice(0, 60)}...
+            Tip: Max 6 traits (interests, quirks, inside jokes). AI will format on game start.
           </p>
         </div>
       )}
